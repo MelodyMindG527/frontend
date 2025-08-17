@@ -1,56 +1,29 @@
-# MelodyMind - AI-Powered Mood-Based Music Player
+# MelodyMind Backend API
 
-MelodyMind is a React + TypeScript application that uses AI to detect your mood and recommend personalized music playlists. The app features multiple mood detection methods, interactive games, mood tracking, and comprehensive analytics.
+A comprehensive Node.js + Express backend for the MelodyMind AI-powered mood-based music player application.
 
-## 🎵 Features
+## 🚀 Features
 
-### Core Features
-- **Multi-Modal Mood Detection**
-  - Camera-based facial expression analysis
-  - Text-based mood input with intensity slider
-  - Voice tone analysis and commands
-  - Manual journal entries
+- **Authentication**: JWT-based user authentication with registration and login
+- **Song Management**: Upload, manage, and recommend songs based on mood and preferences
+- **Playlist System**: Create, manage, and auto-generate playlists
+- **Mood Tracking**: Log and analyze mood patterns with multiple detection methods
+- **Music Analytics**: Track listening habits and generate insights
+- **Game System**: Mood upliftment games with session tracking and analytics
+- **Comprehensive Analytics**: Dashboard analytics, trends, and correlations
 
-- **AI-Powered Music Recommendations**
-  - Personalized playlists based on detected mood
-  - Mood-music correlation analytics
-  - Smart song suggestions
+## 📋 Prerequisites
 
-- **Interactive Mood Upliftment Games**
-  - Tap the Notes game for mood improvement
-  - Coming soon: Breathing exercises, mood quizzes, gratitude journal
-
-- **Comprehensive Mood Tracking**
-  - Interactive calendar with mood visualization
-  - Daily mood entries with notes
-  - Mood history and patterns
-
-- **Advanced Analytics**
-  - Mood frequency and intensity charts
-  - Weekly mood trends
-  - Music genre preferences by mood
-  - Personal insights and statistics
-
-### Technical Features
-- **Responsive Design**: Works seamlessly on mobile and desktop
-- **Modern UI**: Material UI components with smooth animations
-- **State Management**: Zustand for efficient state management
-- **Type Safety**: Full TypeScript implementation
-- **Route Protection**: Authentication-based access control
-- **Persistent Storage**: Local storage for user data
-
-## 🚀 Getting Started
-
-### Prerequisites
 - Node.js (v16 or higher)
+- MongoDB (v4.4 or higher)
 - npm or yarn
 
-### Installation
+## 🛠️ Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd MelodyMind/melodymind
+   cd melodymind-backend
    ```
 
 2. **Install dependencies**
@@ -58,135 +31,376 @@ MelodyMind is a React + TypeScript application that uses AI to detect your mood 
    npm install
    ```
 
-3. **Start the development server**
+3. **Set up environment variables**
    ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` file with your configuration:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/melodymind
+   JWT_SECRET=your_super_secret_jwt_key_here
+   JWT_EXPIRE=7d
+   PORT=5000
+   NODE_ENV=development
+   FRONTEND_URL=http://localhost:3000
+   MAX_FILE_SIZE=10485760
+   UPLOAD_PATH=./uploads/songs/
+   ```
+
+4. **Create upload directories**
+   ```bash
+   mkdir -p uploads/songs
+   ```
+
+5. **Start MongoDB**
+   Make sure MongoDB is running on your system.
+
+6. **Start the server**
+   ```bash
+   # Development mode with auto-reload
+   npm run dev
+   
+   # Production mode
    npm start
    ```
 
-4. **Open your browser**
-   Navigate to `http://localhost:3000`
+The server will start on `http://localhost:5000`
 
-### Demo Credentials
-- **Email**: `demo@melodymind.com`
-- **Password**: `demo123`
+## 📚 API Documentation
 
-## 🎮 How to Use
-
-### 1. Login
-- Use the demo credentials or click "Continue with Google"
-- The app will redirect you to the dashboard after successful authentication
-
-### 2. Mood Detection
-Choose from three mood detection methods:
-
-**Camera Detection**
-- Click the camera icon
-- Allow camera access
-- Look at the camera for facial expression analysis
-- Review detected mood and confirm
-
-**Text Input**
-- Click the text icon
-- Select your mood from the available options
-- Adjust intensity using the slider
-- Add optional notes about your feelings
-
-**Voice Control**
-- Click the voice icon
-- Speak naturally about your mood or use voice commands
-- The app will analyze your voice tone and content
-- Review detected mood and confirm
-
-### 3. Music Recommendations
-- After mood detection, view AI-recommended playlists
-- Each playlist shows mood match percentage
-- Click "Play" to start listening
-- Save playlists for later use
-
-### 4. Mood Tracking
-- Use the Journal page to track daily moods
-- Interactive calendar shows mood history
-- Add manual entries for any date
-- View detailed mood information
-
-### 5. Analytics
-- Visit the Analytics page for insights
-- View mood frequency and intensity charts
-- Track weekly mood trends
-- Discover music genre preferences
-
-### 6. Mood Games
-- Access games from the Games page
-- Play "Tap the Notes" for mood improvement
-- More games coming soon
-
-## 🏗️ Project Structure
-
+### Base URL
 ```
-src/
-├── components/          # Reusable UI components
-│   ├── Layout.tsx      # Main layout with navigation
-│   ├── MusicPlayer.tsx # Music player controls
-│   ├── MoodDetectionModal.tsx
-│   ├── WebcamCapture.tsx
-│   ├── VoiceControl.tsx
-│   ├── PlaylistRecommendations.tsx
-│   └── MoodUpliftmentGame.tsx
-├── pages/              # Main application pages
-│   ├── LoginPage.tsx
-│   ├── Dashboard.tsx
-│   ├── Journal.tsx
-│   ├── Analytics.tsx
-│   ├── Games.tsx
-│   └── Settings.tsx
-├── store/              # State management
-│   ├── authStore.ts    # Authentication state
-│   └── musicStore.ts   # Music and mood state
-└── App.tsx             # Main application component
+http://localhost:5000/api
 ```
 
-## 🛠️ Technologies Used
+### Authentication Endpoints
 
-- **Frontend Framework**: React 19 with TypeScript
-- **UI Library**: Material UI (MUI)
-- **State Management**: Zustand
-- **Routing**: React Router DOM
-- **Animations**: Framer Motion
-- **Charts**: Recharts
-- **Webcam**: React Webcam
-- **Styling**: Emotion (CSS-in-JS)
+#### Register User
+```http
+POST /auth/register
+Content-Type: application/json
 
-## 🎨 Design Features
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "preferences": {
+    "language": "en",
+    "theme": "light",
+    "detectionMode": "auto"
+  }
+}
+```
 
-- **Responsive Design**: Mobile-first approach with adaptive layouts
-- **Smooth Animations**: Page transitions and micro-interactions
-- **Mood-Based Theming**: Background colors change based on detected mood
-- **Accessibility**: ARIA labels and keyboard navigation
-- **Modern UI**: Clean, intuitive interface with Material Design principles
+#### Login User
+```http
+POST /auth/login
+Content-Type: application/json
 
-## 🔧 Configuration
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
 
-### Settings Page
-- **Privacy & Security**: Control camera, voice, and data sharing permissions
-- **AI Voice Assistant**: Customize voice personality, speed, and volume
-- **App Preferences**: Auto-play, notifications, dark mode
-- **Music Settings**: Default volume, crossfade, audio quality
+#### Get Current User
+```http
+GET /auth/me
+Authorization: Bearer <jwt_token>
+```
 
-## 📱 Mobile Experience
+### Song Endpoints
 
-- **Bottom Navigation**: Easy thumb navigation on mobile devices
-- **Touch-Friendly**: Large touch targets and gesture support
-- **Responsive Layout**: Optimized for all screen sizes
-- **Offline Support**: Local storage for core functionality
+#### Upload Song
+```http
+POST /songs/upload
+Authorization: Bearer <jwt_token>
+Content-Type: multipart/form-data
 
-## 🔮 Future Features
+{
+  "audioFile": <file>,
+  "title": "Song Title",
+  "artist": "Artist Name",
+  "genre": "pop",
+  "moodTags": ["happy", "energetic"],
+  "duration": 180,
+  "language": "en"
+}
+```
 
-- **Real AI Integration**: Connect to actual mood detection APIs
-- **Music Streaming**: Integration with Spotify, Apple Music, etc.
-- **Social Features**: Share playlists and mood insights
-- **Advanced Games**: More interactive mood improvement activities
-- **Voice Assistant**: Full conversational AI integration
-- **Dark Mode**: Complete dark theme implementation
+#### Get Songs
+```http
+GET /songs?mood=happy&genre=pop&page=1&limit=20
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Song Recommendations
+```http
+GET /songs/recommendations?mood=happy&energy=8&limit=10
+Authorization: Bearer <jwt_token>
+```
+
+### Playlist Endpoints
+
+#### Create Playlist
+```http
+POST /playlists
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "name": "My Playlist",
+  "description": "A great playlist",
+  "isPublic": false
+}
+```
+
+#### Auto-Generate Playlist
+```http
+GET /playlists/auto-generate?mood=happy&tempo=fast&limit=20
+Authorization: Bearer <jwt_token>
+```
+
+#### Add Song to Playlist
+```http
+POST /playlists/:id/songs
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "songId": "song_id_here"
+}
+```
+
+### Mood Endpoints
+
+#### Log Mood
+```http
+POST /moods
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "mood": "happy",
+  "intensity": 8,
+  "detectionMethod": "camera",
+  "confidence": 0.85,
+  "notes": "Feeling great today!",
+  "context": {
+    "activity": "work",
+    "location": "office"
+  }
+}
+```
+
+#### Get Mood History
+```http
+GET /moods?page=1&limit=20&startDate=2024-01-01
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Mood Trends
+```http
+GET /moods/trends?days=7
+Authorization: Bearer <jwt_token>
+```
+
+### Game Endpoints
+
+#### Get Available Games
+```http
+GET /games?type=mood-upliftment&difficulty=easy
+Authorization: Bearer <jwt_token>
+```
+
+#### Start Game Session
+```http
+POST /games/:id/start
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "moodBefore": {
+    "mood": "sad",
+    "intensity": 4
+  },
+  "difficulty": "easy"
+}
+```
+
+#### Complete Game Session
+```http
+PUT /games/sessions/:sessionId/complete
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "moodAfter": {
+    "mood": "happy",
+    "intensity": 7
+  },
+  "score": 850,
+  "maxScore": 1000
+}
+```
+
+### Analytics Endpoints
+
+#### Get Dashboard Analytics
+```http
+GET /analytics/dashboard?days=30
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Mood Trends
+```http
+GET /analytics/mood-trends?days=30&groupBy=day
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Listening Patterns
+```http
+GET /analytics/listening-patterns?days=30
+Authorization: Bearer <jwt_token>
+```
+
+## 🗂️ Project Structure
+
+```
+melodymind-backend/
+├── config/
+│   └── db.js                 # MongoDB connection
+├── middleware/
+│   └── authMiddleware.js     # JWT authentication middleware
+├── models/
+│   ├── User.js              # User model
+│   ├── Song.js              # Song model
+│   ├── Playlist.js          # Playlist model
+│   ├── MoodLog.js           # Mood log model
+│   ├── PlaybackLog.js       # Playback log model
+│   ├── Game.js              # Game model
+│   └── GameSession.js       # Game session model
+├── routes/
+│   ├── auth.js              # Authentication routes
+│   ├── songs.js             # Song management routes
+│   ├── playlists.js         # Playlist routes
+│   ├── moods.js             # Mood tracking routes
+│   ├── analytics.js         # Analytics routes
+│   └── games.js             # Game routes
+├── uploads/
+│   └── songs/               # Uploaded song files
+├── .env.example             # Environment variables template
+├── server.js                # Main server file
+└── package.json             # Dependencies and scripts
+```
+
+## 🔧 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/melodymind` |
+| `JWT_SECRET` | Secret key for JWT tokens | Required |
+| `JWT_EXPIRE` | JWT token expiration time | `7d` |
+| `PORT` | Server port | `5000` |
+| `NODE_ENV` | Environment mode | `development` |
+| `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:3000` |
+| `MAX_FILE_SIZE` | Maximum file upload size | `10485760` (10MB) |
+| `UPLOAD_PATH` | Path for uploaded files | `./uploads/songs/` |
+
+## 🧪 Testing
+
+Test the API endpoints using tools like:
+
+- **Postman**: Import the API collection
+- **curl**: Command line testing
+- **Thunder Client**: VS Code extension
+
+### Example curl commands:
+
+```bash
+# Health check
+curl http://localhost:5000/api/health
+
+# Register user
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test User","email":"test@example.com","password":"password123"}'
+
+# Login user
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
+```
+
+## 🚀 Deployment
+
+### Production Setup
+
+1. **Set environment to production**
+   ```bash
+   NODE_ENV=production
+   ```
+
+2. **Use a process manager**
+   ```bash
+   npm install -g pm2
+   pm2 start server.js --name "melodymind-backend"
+   ```
+
+3. **Set up reverse proxy** (nginx example)
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain.com;
+       
+       location /api {
+           proxy_pass http://localhost:5000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+       }
+   }
+   ```
+
+## 🔒 Security Features
+
+- **JWT Authentication**: Secure token-based authentication
+- **Password Hashing**: bcrypt with salt rounds
+- **Rate Limiting**: Prevents API abuse
+- **CORS Protection**: Configured for frontend domain
+- **Input Validation**: Comprehensive request validation
+- **File Upload Security**: File type and size restrictions
+- **Helmet.js**: Security headers
+
+## 📊 Database Schema
+
+### Users
+- Authentication and user preferences
+- Profile information and settings
+
+### Songs
+- Audio file metadata and storage
+- Mood tags and genre classification
+- Play counts and user ratings
+
+### Playlists
+- User-created and auto-generated playlists
+- Song collections with metadata
+
+### Mood Logs
+- Mood detection history
+- Context and trigger information
+- Detection method tracking
+
+### Playback Logs
+- Listening history and patterns
+- Song completion rates
+- Mood-music correlations
+
+### Games & Game Sessions
+- Available mood upliftment games
+- User game sessions and scores
+- Mood improvement tracking
 
 ## 🤝 Contributing
 
@@ -196,21 +410,16 @@ src/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+## 🆘 Support
 
-- Material UI for the beautiful component library
-- Framer Motion for smooth animations
-- Recharts for data visualization
-- The React community for excellent tools and libraries
-
-## 📞 Support
-
-For support, email support@melodymind.com or create an issue in the repository.
+For support and questions:
+- Create an issue in the repository
+- Email: support@melodymind.com
 
 ---
 
-**MelodyMind** - Your AI-powered mood-based music companion 🎵✨
+**MelodyMind Backend** - Powering AI-driven mood-based music experiences 🎵🤖
