@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { Mic, MicOff, Close, CheckCircle, VolumeUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useMusicStore } from '../store/musicStore';
 
 interface VoiceControlProps {
   open: boolean;
@@ -37,6 +38,18 @@ const VoiceControl: React.FC<VoiceControlProps> = ({
   const [detectedMood, setDetectedMood] = useState<any>(null);
   const [error, setError] = useState('');
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const {
+    currentSong,
+    isPlaying,
+    volume,
+    queue,
+    togglePlay,
+    playNext,
+    playPrevious,
+    stopPlayback,
+    setVolume,
+    playSong,
+  } = useMusicStore();
 
   const voiceCommands = [
     'play',
@@ -76,6 +89,7 @@ const VoiceControl: React.FC<VoiceControlProps> = ({
       const randomTranscript = sampleTranscripts[Math.floor(Math.random() * sampleTranscripts.length)];
       setTranscript(randomTranscript);
       setIsListening(false);
+      handleVoiceCommand(randomTranscript);
       analyzeVoiceMood(randomTranscript);
     }, 3000);
   };
@@ -130,6 +144,45 @@ const VoiceControl: React.FC<VoiceControlProps> = ({
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleVoiceCommand = (text: string) => {
+    const t = text.toLowerCase();
+    let executed = false;
+    if (t.includes('pause') || t.includes('stop playing')) {
+      if (isPlaying) togglePlay();
+      executed = true;
+    }
+    if (t.includes('resume') || t.includes('continue')) {
+      if (!isPlaying && currentSong) togglePlay();
+      executed = true;
+    }
+    if (t.startsWith('play ') || t === 'play') {
+      if (!isPlaying && currentSong) togglePlay();
+      else if (!currentSong && queue.length > 0) playSong(queue[0]);
+      executed = true;
+    }
+    if (t.includes('next')) {
+      playNext();
+      executed = true;
+    }
+    if (t.includes('previous') || t.includes('back')) {
+      playPrevious();
+      executed = true;
+    }
+    if (t.includes('stop')) {
+      stopPlayback();
+      executed = true;
+    }
+    if (t.includes('volume up')) {
+      setVolume(Math.min(volume + 0.1, 1));
+      executed = true;
+    }
+    if (t.includes('volume down')) {
+      setVolume(Math.max(volume - 0.1, 0));
+      executed = true;
+    }
+    if (executed) setCommandHistory((prev) => [...prev, `Command: ${text}`]);
   };
 
   const handleConfirm = () => {

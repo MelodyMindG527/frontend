@@ -1,381 +1,345 @@
 import React, { useState } from 'react';
 import {
   Box,
+  Typography,
   Grid,
   Card,
   CardContent,
-  Typography,
+  Button,
+  Chip,
+  Avatar,
   IconButton,
-  Tabs,
-  Tab,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
 import {
   CameraAlt,
-  Edit,
-  Mic,
   MusicNote,
-  SentimentSatisfied,
-  SentimentDissatisfied,
-  SentimentVerySatisfied,
-  SentimentVeryDissatisfied,
+  Psychology,
+  TrendingUp,
+  PlayArrow,
+  Pause,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useMusicStore } from '../store/musicStore';
+import WebcamCapture from '../components/WebcamCapture';
 import MoodDetectionModal from '../components/MoodDetectionModal';
 import VoiceControl from '../components/VoiceControl';
-import WebcamCapture from '../components/WebcamCapture';
-import PlaylistRecommendations from '../components/PlaylistRecommendations';
-import MoodUpliftmentGame from '../components/MoodUpliftmentGame';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`dashboard-tabpanel-${index}`}
-      aria-labelledby={`dashboard-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+import { useMusicStore } from '../store/musicStore';
 
 const Dashboard: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { currentMood, setCurrentMood, addMoodToHistory } = useMusicStore();
-  
-  const [tabValue, setTabValue] = useState(0);
-  const [showTextModal, setShowTextModal] = useState(false);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [showWebcam, setShowWebcam] = useState(false);
-  const [showVoiceControl, setShowVoiceControl] = useState(false);
-  const [showGame, setShowGame] = useState(false);
+  const [showTextModal, setShowTextModal] = useState(false);
+  const [showVoice, setShowVoice] = useState(false);
+  const [currentMood, setCurrentMood] = useState<any>(null);
+  const { currentSong, isPlaying, togglePlay, playSong } = useMusicStore();
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  const handleMoodDetection = (mood: any) => {
-    const newMood = {
-      id: Date.now().toString(),
-      type: mood.type,
-      intensity: mood.intensity,
-      timestamp: new Date(),
-      source: mood.source,
-      notes: mood.notes,
-    };
+  const handleMoodDetected = (mood: any) => {
+    setCurrentMood(mood);
+    console.log('Mood detected:', mood);
     
-    setCurrentMood(newMood);
-    addMoodToHistory(newMood);
-    
-    // Show game suggestion for negative moods
-    if (['sad', 'anxious', 'melancholic'].includes(mood.type)) {
-      setTimeout(() => {
-        setShowGame(true);
-      }, 2000);
+    // If songs are available, show them
+    if (mood.songs && mood.songs.length > 0) {
+      console.log('Songs available for playback:', mood.songs);
     }
   };
 
-  const getMoodColor = (moodType?: string) => {
+  const getMoodColor = (moodType: string) => {
     switch (moodType) {
       case 'happy':
-      case 'excited':
-        return theme.palette.success.main;
+        return '#4caf50';
       case 'sad':
-      case 'melancholic':
-        return theme.palette.error.main;
+        return '#f44336';
       case 'energetic':
-        return theme.palette.warning.main;
+        return '#ff9800';
       case 'calm':
-      case 'focused':
-        return theme.palette.info.main;
+        return '#2196f3';
       case 'anxious':
-        return theme.palette.error.light;
+        return '#ff5722';
+      case 'focused':
+        return '#795548';
       default:
-        return theme.palette.primary.main;
+        return '#9e9e9e';
     }
   };
 
-  const getMoodIcon = (moodType?: string) => {
-    switch (moodType) {
-      case 'happy':
-      case 'excited':
-        return <SentimentVerySatisfied />;
-      case 'sad':
-      case 'melancholic':
-        return <SentimentVeryDissatisfied />;
-      case 'energetic':
-        return <SentimentSatisfied />;
-      case 'anxious':
-        return <SentimentDissatisfied />;
-      default:
-        return <SentimentSatisfied />;
-    }
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   return (
-    <Box sx={{ position: 'relative', minHeight: '100vh' }}>
-      {/* Animated Background */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: currentMood
-            ? `linear-gradient(135deg, ${getMoodColor(currentMood.type)}20 0%, ${theme.palette.background.default} 100%)`
-            : `linear-gradient(135deg, ${theme.palette.primary.light}10 0%, ${theme.palette.background.default} 100%)`,
-          transition: 'background 0.5s ease',
-        }}
-      />
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Typography
+          variant="h3"
+          fontWeight="bold"
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            mb: 1,
+          }}
+        >
+          Welcome to MelodyMind
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+          Your AI-powered mood-based music companion
+        </Typography>
+      </motion.div>
 
-      <Box sx={{ position: 'relative', zIndex: 1 }}>
-        {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-            Welcome back!
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            How are you feeling today? Let's find the perfect music for your mood.
-          </Typography>
-        </Box>
-
-        {/* Current Mood Display */}
-        {currentMood && (
+      {/* Quick Actions */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={4}>
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Card sx={{ mb: 4, backgroundColor: `${getMoodColor(currentMood.type)}10` }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box
-                    sx={{
-                      color: getMoodColor(currentMood.type),
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    {getMoodIcon(currentMood.type)}
-                  </Box>
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold">
-                      {currentMood.type.charAt(0).toUpperCase() + currentMood.type.slice(1)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Detected via {currentMood.source} • Intensity: {currentMood.intensity}/10
-                    </Typography>
-                  </Box>
-                </Box>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                },
+              }}
+              onClick={() => setShowWebcam(true)}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <CameraAlt sx={{ fontSize: 48, mb: 2 }} />
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  Detect Your Mood
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Use your camera to analyze facial expressions and get personalized music recommendations
+                </Typography>
               </CardContent>
             </Card>
           </motion.div>
-        )}
-
-        {/* Mood Detection Buttons */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={4}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Card
-                sx={{
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  p: 3,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-                  },
-                }}
-                onClick={() => setShowWebcam(true)}
-              >
-                <IconButton
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    mb: 2,
-                  }}
-                >
-                  <CameraAlt sx={{ fontSize: 40 }} />
-                </IconButton>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  Camera
-                </Typography>
-                <Typography variant="body2">
-                  Detect mood from facial expressions
-                </Typography>
-              </Card>
-            </motion.div>
-          </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Card
-                sx={{
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  p: 3,
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                  color: 'white',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #f5576c 0%, #f093fb 100%)',
-                  },
-                }}
-                onClick={() => setShowTextModal(true)}
-              >
-                <IconButton
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    mb: 2,
-                  }}
-                >
-                  <Edit sx={{ fontSize: 40 }} />
-                </IconButton>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  Text
-                </Typography>
-                <Typography variant="body2">
-                  Describe your current mood
-                </Typography>
-              </Card>
-            </motion.div>
-          </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Card
-                sx={{
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  p: 3,
-                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                  color: 'white',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)',
-                  },
-                }}
-                onClick={() => setShowVoiceControl(true)}
-              >
-                <IconButton
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                    color: 'white',
-                    mb: 2,
-                  }}
-                >
-                  <Mic sx={{ fontSize: 40 }} />
-                </IconButton>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  Voice
-                </Typography>
-                <Typography variant="body2">
-                  Voice commands & tone detection
-                </Typography>
-              </Card>
-            </motion.div>
-          </Grid>
         </Grid>
-
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            variant={isMobile ? 'scrollable' : 'fullWidth'}
-            scrollButtons={isMobile ? 'auto' : false}
+        <Grid item xs={12} md={4}>
+          <motion.div
+            initial={{ opacity: 0, x: 0 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Tab label="Recommendations" />
-            <Tab label="Journal" />
-            <Tab label="Analytics" />
-            <Tab label="Games" />
-          </Tabs>
-        </Box>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #34e89e 0%, #0f3443 100%)',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                },
+              }}
+              onClick={() => setShowTextModal(true)}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <Psychology sx={{ fontSize: 48, mb: 2 }} />
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  Describe Your Mood (Text)
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Type how you feel and get recommendations instantly
+                </Typography>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                },
+              }}
+              onClick={() => setShowVoice(true)}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <MusicNote sx={{ fontSize: 48, mb: 2 }} />
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  Voice Control & Mood
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Speak commands (play, pause, next) or describe your mood
+                </Typography>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Grid>
+      </Grid>
 
-        {/* Tab Panels */}
-        <TabPanel value={tabValue} index={0}>
-          <PlaylistRecommendations currentMood={currentMood} />
-        </TabPanel>
+      {/* Current Mood & Music Section */}
+      {currentMood && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Card sx={{ mb: 4, background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }}>
+            <CardContent>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                🎵 Your Mood-Based Music
+              </Typography>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Chip
+                  label={currentMood.type.charAt(0).toUpperCase() + currentMood.type.slice(1)}
+                  sx={{
+                    backgroundColor: getMoodColor(currentMood.type),
+                    color: 'white',
+                    fontWeight: 'bold',
+                  }}
+                />
+                <Typography variant="body1">
+                  Intensity: {currentMood.intensity}/10
+                </Typography>
+                <Typography variant="body1">
+                  Confidence: {Math.round(currentMood.confidence * 100)}%
+                </Typography>
+              </Box>
 
-        <TabPanel value={tabValue} index={1}>
-          <Typography variant="h6" gutterBottom>
-            Mood Journal
-          </Typography>
-          <Typography color="text.secondary">
-            Track your daily moods and see patterns over time.
-          </Typography>
-        </TabPanel>
+              {currentMood.songs && currentMood.songs.length > 0 && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Recommended Songs:
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {currentMood.songs.slice(0, 3).map((song: any, index: number) => (
+                      <Grid item xs={12} sm={6} md={4} key={song.id}>
+                        <Card sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          p: 2,
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.02)',
+                          }
+                        }}
+                        onClick={() => playSong(song)}
+                        >
+                          <Avatar
+                            src={song.cover}
+                            alt={song.title}
+                            sx={{ width: 48, height: 48, mr: 2 }}
+                          />
+                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                            <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                              {song.title}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              {song.artist}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatTime(song.duration)}
+                            </Typography>
+                          </Box>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playSong(song);
+                            }}
+                          >
+                            <PlayArrow />
+                          </IconButton>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
-        <TabPanel value={tabValue} index={2}>
-          <Typography variant="h6" gutterBottom>
-            Mood Analytics
-          </Typography>
-          <Typography color="text.secondary">
-            View detailed analytics about your mood trends and music preferences.
-          </Typography>
-        </TabPanel>
+      {/* Currently Playing */}
+      {currentSong && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Card sx={{ background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' }}>
+            <CardContent>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                🎵 Now Playing
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar
+                  src={currentSong.cover}
+                  alt={currentSong.title}
+                  sx={{ width: 64, height: 64 }}
+                />
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" fontWeight="bold">
+                    {currentSong.title}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {currentSong.artist}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {currentSong.album}
+                  </Typography>
+                </Box>
+                <IconButton
+                  size="large"
+                  onClick={togglePlay}
+                  sx={{
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                  }}
+                >
+                  {isPlaying ? <Pause /> : <PlayArrow />}
+                </IconButton>
+              </Box>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
-        <TabPanel value={tabValue} index={3}>
-          <Typography variant="h6" gutterBottom>
-            Mood Upliftment Games
-          </Typography>
-          <Typography color="text.secondary">
-            Interactive games to help improve your mood when you're feeling down.
-          </Typography>
-        </TabPanel>
-      </Box>
-
-      {/* Modals */}
-      <MoodDetectionModal
-        open={showTextModal}
-        onClose={() => setShowTextModal(false)}
-        onMoodDetected={handleMoodDetection}
-        source="text"
-      />
-
+      {/* Webcam Modal */}
       <WebcamCapture
         open={showWebcam}
         onClose={() => setShowWebcam(false)}
-        onMoodDetected={handleMoodDetection}
+        onMoodDetected={handleMoodDetected}
       />
-
+      <MoodDetectionModal
+        open={showTextModal}
+        onClose={() => setShowTextModal(false)}
+        onMoodDetected={handleMoodDetected}
+        source="text"
+      />
       <VoiceControl
-        open={showVoiceControl}
-        onClose={() => setShowVoiceControl(false)}
-        onMoodDetected={handleMoodDetection}
-      />
-
-      <MoodUpliftmentGame
-        open={showGame}
-        onClose={() => setShowGame(false)}
+        open={showVoice}
+        onClose={() => setShowVoice(false)}
+        onMoodDetected={handleMoodDetected}
       />
     </Box>
   );

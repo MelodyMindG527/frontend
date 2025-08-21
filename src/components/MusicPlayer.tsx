@@ -23,8 +23,25 @@ import { useMusicStore } from '../store/musicStore';
 const MusicPlayer: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { currentSong, isPlaying, volume, togglePlay, playNext, playPrevious, setVolume } = useMusicStore();
+  const { 
+    currentSong, 
+    isPlaying, 
+    volume, 
+    currentTime, 
+    duration,
+    togglePlay, 
+    playNext, 
+    playPrevious, 
+    setVolume,
+    seekTo 
+  } = useMusicStore();
   const [showVolume, setShowVolume] = useState(false);
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   if (!currentSong) {
     return null;
@@ -45,6 +62,26 @@ const MusicPlayer: React.FC = () => {
       }}
     >
       <CardContent sx={{ py: 1, px: 2 }}>
+        {/* Progress Bar */}
+        <Slider
+          value={duration > 0 ? currentTime : 0}
+          max={duration || 100}
+          onChange={(_, value) => seekTo(value as number)}
+          sx={{
+            mb: 1,
+            '& .MuiSlider-thumb': {
+              width: 8,
+              height: 8,
+            },
+            '& .MuiSlider-track': {
+              height: 2,
+            },
+            '& .MuiSlider-rail': {
+              height: 2,
+            },
+          }}
+        />
+        
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {/* Song Cover */}
           <Avatar
@@ -76,6 +113,13 @@ const MusicPlayer: React.FC = () => {
               }}
             >
               {currentSong.artist}
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'flex', gap: 1 }}
+            >
+              {formatTime(currentTime)} / {formatTime(duration)}
             </Typography>
           </Box>
 

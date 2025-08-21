@@ -16,6 +16,7 @@ import {
 import { CameraAlt, Close, CheckCircle } from '@mui/icons-material';
 import Webcam from 'react-webcam';
 import { motion } from 'framer-motion';
+import { useMusicStore } from '../store/musicStore';
 
 interface WebcamCaptureProps {
   open: boolean;
@@ -57,10 +58,36 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
     setError('');
 
     try {
-      // Simulate AI mood detection
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Convert base64 image to blob
+      const base64Data = imageSrc.split(',')[1];
+      const blob = await fetch(`data:image/jpeg;base64,${base64Data}`).then(res => res.blob());
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('file', blob, 'capture.jpg');
 
-      // Simulate different mood detections based on random chance
+      // Call the backend mood detection API
+      const response = await fetch('http://localhost:8000/api/v1/mood/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      setDetectedMood({
+        type: result.mood_label,
+        intensity: result.intensity || 5,
+        confidence: result.confidence || 0.8,
+      });
+    } catch (err) {
+      console.error('Mood detection error:', err);
+      setError('Failed to analyze mood. Please try again.');
+      
+      // Fallback to mock data if backend is not available
       const moods = [
         { type: 'happy', intensity: 8, confidence: 0.85 },
         { type: 'calm', intensity: 6, confidence: 0.78 },
@@ -72,8 +99,6 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
 
       const randomMood = moods[Math.floor(Math.random() * moods.length)];
       setDetectedMood(randomMood);
-    } catch (err) {
-      setError('Failed to analyze mood. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -86,13 +111,75 @@ const WebcamCapture: React.FC<WebcamCaptureProps> = ({
     setIsCapturing(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (detectedMood) {
-      onMoodDetected({
-        ...detectedMood,
-        source: 'camera',
-        notes: 'Detected via facial expression analysis',
-      });
+      try {
+        // Generate playlist from backend
+        const playlistResponse = await fetch('http://localhost:8000/api/v1/playlists/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: 'demo-user', // You can replace with actual user ID
+            mood_label: detectedMood.type,
+            max_items: 10,
+            playlist_name: 'Mood-Based Playlist'
+          }),
+        });
+
+        if (playlistResponse.ok) {
+          const playlist = await playlistResponse.json();
+          
+          // Convert backend playlist items to frontend Song format
+          const songs = playlist.items?.map((item: any) => ({
+            id: item.song_id,
+            title: item.song_title,
+            artist: item.artist,
+            album: item.album,
+            duration: item.duration,
+            url: item.audio_url || '',
+            cover: item.cover_url || `https://picsum.photos/300/300?random=${Math.floor(Math.random() * 100)}`,
+            genre: item.mood_tags?.[0] || 'unknown',
+            audio_url: item.audio_url,
+            cover_url: item.cover_url
+          })) || [];
+
+          // Auto-play the first song if available
+          if (songs.length > 0) {
+            const { playSong, addToQueue } = useMusicStore.getState();
+            playSong(songs[0]);
+            
+            // Add remaining songs to queue
+            songs.slice(1).forEach((song: any) => {
+              addToQueue(song);
+            });
+          }
+
+          onMoodDetected({
+            ...detectedMood,
+            source: 'camera',
+            notes: 'Detected via facial expression analysis',
+            playlist: playlist,
+            songs: songs
+          });
+        } else {
+          // Fallback if playlist generation fails
+          onMoodDetected({
+            ...detectedMood,
+            source: 'camera',
+            notes: 'Detected via facial expression analysis',
+          });
+        }
+      } catch (err) {
+        console.error('Playlist generation error:', err);
+        // Fallback
+        onMoodDetected({
+          ...detectedMood,
+          source: 'camera',
+          notes: 'Detected via facial expression analysis',
+        });
+      }
       handleClose();
     }
   };

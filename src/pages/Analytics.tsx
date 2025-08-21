@@ -121,7 +121,7 @@ const Analytics: React.FC = () => {
 
   const genrePreferences = getGenrePreferences();
 
-  const getMoodColor = (moodType: string) => {
+  function getMoodColor(moodType: string) {
     switch (moodType) {
       case 'happy':
       case 'excited':
@@ -139,7 +139,7 @@ const Analytics: React.FC = () => {
       default:
         return '#9e9e9e';
     }
-  };
+  }
 
   const getMoodIcon = (moodType: string) => {
     switch (moodType) {

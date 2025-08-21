@@ -10,6 +10,8 @@ export interface Song {
   url: string;
   cover: string;
   genre: string;
+  audio_url?: string;
+  cover_url?: string;
 }
 
 export interface Mood {
@@ -39,6 +41,9 @@ interface MusicState {
   moodHistory: Mood[];
   playlists: Playlist[];
   isLoading: boolean;
+  currentTime: number;
+  duration: number;
+  audioElement: HTMLAudioElement | null;
   
   // Actions
   setCurrentSong: (song: Song | null) => void;
@@ -55,6 +60,8 @@ interface MusicState {
   playNext: () => void;
   playPrevious: () => void;
   seekTo: (time: number) => void;
+  playSong: (song: Song) => void;
+  stopPlayback: () => void;
 }
 
 const dummySongs: Song[] = [
@@ -101,12 +108,70 @@ export const useMusicStore = create<MusicState>()(
       moodHistory: [],
       playlists: [],
       isLoading: false,
+      currentTime: 0,
+      duration: 0,
+      audioElement: null,
       
-      setCurrentSong: (song) => set({ currentSong: song }),
+      setCurrentSong: (song) => {
+        const { audioElement } = get();
+        if (audioElement) {
+          audioElement.pause();
+        }
+        
+        if (song) {
+          const newAudio = new Audio(song.audio_url || song.url);
+          newAudio.volume = get().volume;
+          
+          newAudio.addEventListener('loadedmetadata', () => {
+            set({ duration: newAudio.duration });
+          });
+          
+          newAudio.addEventListener('timeupdate', () => {
+            set({ currentTime: newAudio.currentTime });
+          });
+          
+          newAudio.addEventListener('ended', () => {
+            get().playNext();
+          });
+          
+          set({ 
+            currentSong: song, 
+            audioElement: newAudio,
+            isPlaying: false,
+            currentTime: 0,
+            duration: 0
+          });
+        } else {
+          set({ 
+            currentSong: null, 
+            audioElement: null,
+            isPlaying: false,
+            currentTime: 0,
+            duration: 0
+          });
+        }
+      },
       
-      togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+      togglePlay: () => {
+        const { audioElement, isPlaying } = get();
+        if (audioElement) {
+          if (isPlaying) {
+            audioElement.pause();
+            set({ isPlaying: false });
+          } else {
+            audioElement.play();
+            set({ isPlaying: true });
+          }
+        }
+      },
       
-      setVolume: (volume) => set({ volume }),
+      setVolume: (volume) => {
+        const { audioElement } = get();
+        if (audioElement) {
+          audioElement.volume = volume;
+        }
+        set({ volume });
+      },
       
       addToQueue: (song) => set((state) => ({ 
         queue: [...state.queue, song] 
@@ -135,12 +200,28 @@ export const useMusicStore = create<MusicState>()(
       
       setLoading: (loading) => set({ isLoading: loading }),
       
+      playSong: (song) => {
+        get().setCurrentSong(song);
+        setTimeout(() => {
+          get().togglePlay();
+        }, 100);
+      },
+      
+      stopPlayback: () => {
+        const { audioElement } = get();
+        if (audioElement) {
+          audioElement.pause();
+          audioElement.currentTime = 0;
+        }
+        set({ isPlaying: false, currentTime: 0 });
+      },
+      
       playNext: () => {
         const { queue, currentSong } = get();
         const currentIndex = queue.findIndex(song => song.id === currentSong?.id);
         const nextSong = queue[currentIndex + 1] || queue[0];
         if (nextSong) {
-          set({ currentSong: nextSong, isPlaying: true });
+          get().playSong(nextSong);
         }
       },
       
@@ -149,14 +230,17 @@ export const useMusicStore = create<MusicState>()(
         const currentIndex = queue.findIndex(song => song.id === currentSong?.id);
         const prevSong = queue[currentIndex - 1] || queue[queue.length - 1];
         if (prevSong) {
-          set({ currentSong: prevSong, isPlaying: true });
+          get().playSong(prevSong);
         }
       },
       
       seekTo: (time) => {
-        // This would be implemented with actual audio player
-        console.log('Seeking to:', time);
-      },
+        const { audioElement } = get();
+        if (audioElement) {
+          audioElement.currentTime = time;
+          set({ currentTime: time });
+        }
+      }
     }),
     {
       name: 'music-storage',
