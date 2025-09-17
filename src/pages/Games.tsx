@@ -20,6 +20,9 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import MoodUpliftmentGame from '../components/MoodUpliftmentGame';
+import MoodQuizGame from '../components/MoodQuizGame';
+import BreathingExerciseGame from '../components/BreathingExerciseGame';
+import GratitudeJournalGame from '../components/GratitudeJournalGame';
 
 const Games: React.FC = () => {
   const theme = useTheme();
@@ -93,12 +96,7 @@ const Games: React.FC = () => {
   ];
 
   const handleGameSelect = (gameId: string) => {
-    if (gameId === 'tap-notes') {
-      setSelectedGame(gameId);
-    } else {
-      // For other games, show coming soon message
-      alert('This game is coming soon! For now, try the Tap the Notes game.');
-    }
+    setSelectedGame(gameId);
   };
 
   return (
@@ -210,7 +208,7 @@ const Games: React.FC = () => {
                       },
                     }}
                   >
-                    {game.id === 'tap-notes' ? 'Play Now' : 'Coming Soon'}
+                    Play Now
                   </Button>
                 </CardContent>
               </Card>
@@ -268,9 +266,21 @@ const Games: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Mood Upliftment Game Modal */}
+      {/* Game Modals */}
       <MoodUpliftmentGame
         open={selectedGame === 'tap-notes'}
+        onClose={() => setSelectedGame(null)}
+      />
+      <MoodQuizGame
+        open={selectedGame === 'mood-quiz'}
+        onClose={() => setSelectedGame(null)}
+      />
+      <BreathingExerciseGame
+        open={selectedGame === 'breathing-exercise'}
+        onClose={() => setSelectedGame(null)}
+      />
+      <GratitudeJournalGame
+        open={selectedGame === 'gratitude-journal'}
         onClose={() => setSelectedGame(null)}
       />
     </Box>

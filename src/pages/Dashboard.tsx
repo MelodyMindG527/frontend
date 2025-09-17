@@ -19,11 +19,14 @@ import {
   TrendingUp,
   PlayArrow,
   Pause,
+  QueueMusic,
+  SmartToy,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import WebcamCapture from '../components/WebcamCapture';
 import MoodDetectionModal from '../components/MoodDetectionModal';
 import VoiceControl from '../components/VoiceControl';
+import SmartPlaylistGenerator from '../components/SmartPlaylistGenerator';
 import { useMusicStore } from '../store/musicStore';
 
 const Dashboard: React.FC = () => {
@@ -32,6 +35,7 @@ const Dashboard: React.FC = () => {
   const [showWebcam, setShowWebcam] = useState(false);
   const [showTextModal, setShowTextModal] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
+  const [showSmartPlaylist, setShowSmartPlaylist] = useState(false);
   const [currentMood, setCurrentMood] = useState<any>(null);
   const { currentSong, isPlaying, togglePlay, playSong } = useMusicStore();
 
@@ -98,7 +102,7 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3}>
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -128,7 +132,7 @@ const Dashboard: React.FC = () => {
             </Card>
           </motion.div>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3}>
           <motion.div
             initial={{ opacity: 0, x: 0 }}
             animate={{ opacity: 1, x: 0 }}
@@ -158,9 +162,9 @@ const Dashboard: React.FC = () => {
             </Card>
           </motion.div>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={3}>
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 0 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
@@ -183,6 +187,36 @@ const Dashboard: React.FC = () => {
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Speak commands (play, pause, next) or describe your mood
+                </Typography>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                },
+              }}
+              onClick={() => setShowSmartPlaylist(true)}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <SmartToy sx={{ fontSize: 48, mb: 2 }} />
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  Smart Playlist Generator
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  AI-powered playlist creation based on your mood detection
                 </Typography>
               </CardContent>
             </Card>
@@ -340,6 +374,12 @@ const Dashboard: React.FC = () => {
         open={showVoice}
         onClose={() => setShowVoice(false)}
         onMoodDetected={handleMoodDetected}
+      />
+      
+      {/* Smart Playlist Generator */}
+      <SmartPlaylistGenerator
+        open={showSmartPlaylist}
+        onClose={() => setShowSmartPlaylist(false)}
       />
     </Box>
   );

@@ -31,6 +31,7 @@ import {
   Logout,
   Notifications,
   Search,
+  QueueMusic,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
